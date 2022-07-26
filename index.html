@@ -4,24 +4,44 @@
             S u b c o n s c i o u s
         </title>
         <style>
+            @font-face {
+                font-family: mochi;
+                src: url("./MochiyPopOne-Regular.ttf")
+            }
+
             body {
-                margin:0;
-                padding:0;
+                margin: 0;
+                height: 100vh;
                 display: flex;
-                align-items: center;
+                flex-direction: column;
+                justify-content: center;
                 background-color: #fffbd2;
             }
             
             img {
                 width: 100%;
+                margin: auto;
                 align-self: center;
-                image-rendering: auto;
-                image-rendering: pixelated;
                 image-rendering: crisp-edges;
+            }
+
+            a {
+                color: #9CFF89;
+                font-size: 1.25em;
+                align-self: center;
+                padding-bottom: 16px;
+                text-decoration: none;
+                text-transform: uppercase;
+                font-family: "mochi", Arial;
+            }
+
+            a:hover {
+                color: #7ccc6d;
             }
         </style>
     </head>
     <body>
         <img src="./logo.png" />
+        <a href="mailto: allthese.isms@gmail.com?subject=Hello">Reach Us</a>
     </body>
 </html>
