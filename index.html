@@ -4,11 +4,11 @@
         <meta name="msapplication-TileColor" content="#da532c">
         <meta name="viewport" content="initial-scale=1, maximum-scale=1">
 
-        <link rel="manifest" href="https://subconscious.design/site.webmanifest">
-        <link rel="mask-icon" href="https://subconscious.design/safari-pinned-tab.svg" color="#5bbad5">
-        <link rel="apple-touch-icon" sizes="180x180" href="https://subconscious.design/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="https://subconscious.design/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="https://subconscious.design/favicon-16x16.png">
+        <link rel="manifest" href="https://subconscious.design/static/site.webmanifest">
+        <link rel="mask-icon" href="https://subconscious.design/static/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="apple-touch-icon" sizes="180x180" href="https://subconscious.design/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="https://subconscious.design/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="https://subconscious.design/static/favicon-16x16.png">
 
         <title>
             S u b c o n s c i o u s
@@ -16,7 +16,7 @@
         <style>
             @font-face {
                 font-family: mochi;
-                src: url("./MochiyPopOne-Regular.ttf")
+                src: url("./font/MochiyPopOne-Regular.ttf")
             }
 
             body {
@@ -28,7 +28,7 @@
                 background-color: #fffbd2;
             }
             
-            img {
+            #main-image {
                 width: 100%;
                 margin: auto;
                 align-self: center;
@@ -38,8 +38,6 @@
             a {
                 color: #9CFF89;
                 font-size: 1.25em;
-                align-self: center;
-                padding-bottom: 16px;
                 text-decoration: none;
                 text-transform: uppercase;
                 font-family: "mochi", Arial;
@@ -48,10 +46,182 @@
             a:hover {
                 color: #7ccc6d;
             }
+
+            #footer {
+                width: 100%;
+                display: flex;
+                align-self: center;
+                padding-bottom: 16px;
+                justify-content: space-around;
+            }
+
+            #prints-gallery {
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: none;
+                overflow: hidden;
+                position: absolute;
+            }
+
+            #prints-gallery-inner {
+                display: flex;
+                padding: 16px;
+                flex-wrap: wrap;
+                overflow: scroll;
+                justify-content: space-evenly;
+            }
+
+            .gallery-image {
+                width: auto;
+                max-height: 300px;
+                border: 8px solid black;
+                transition: transform .1s;
+            }
+
+            .gallery-image:hover {
+                transform: scale(1.2);
+            }
+
+            .gallery-image-container {
+                padding: 16px;
+                display: inline-block;
+            }
+
+            #lightbox {
+                top: 0;
+                left: 0;
+                z-index: 1;
+                width: 100%;
+                height: 100%;
+                display: none;
+                overflow: auto;
+                position: fixed;
+                padding-top: 40px;
+                background-color: black;
+            }
+
+            #lightbox-content {
+                padding: 0;
+                width: 40%;
+                margin: auto;
+                max-width: 1200px;
+                position: relative;
+                background-color: #fffbd2;
+            }
+
+            .close {
+                top: 10px;
+                right: 25px;
+                color: white;
+                font-size: 35px;
+                font-weight: bold;
+                position: absolute;
+            }
+
+            .close:hover,.close:focus {
+                color: #999;
+                cursor: pointer;
+                text-decoration: none;
+            }
         </style>
     </head>
     <body>
-        <img src="./logo.png" />
-        <a href="mailto: allthese.isms@gmail.com?subject=Hello">Reach Us</a>
+        <div id="prints-gallery">
+            <div id="prints-gallery-inner"></div>
+        </div>
+
+        <div id="lightbox">
+            <span class="close cursor" onclick="closeModal()">&times;</span>
+            <div id="lightbox-content"></div>
+        </div>
+
+        <img id="main-image" src="./static/logo.png" />
+
+        <div id="footer">
+            <a id="prints-btn" href="javascript:void(0);">Prints</a>
+            <a href="mailto: allthese.isms@gmail.com?subject=Hello">Reach Us</a>
+        </div>
     </body>
+
+    <script>
+        const NUM_PRINTS = 22;
+
+        document.getElementById("prints-btn").addEventListener("click", () => {
+            let imgIds = [];
+            let imgElStrs = [];
+
+            const printsGalleryInner = document.getElementById("prints-gallery-inner");
+            const printsGallery = document.getElementById("prints-gallery");
+            const printsGalStyle = getComputedStyle(printsGallery);
+
+            if (printsGalStyle.display == 'none') {
+                printsGallery.style.display = 'flex';
+            }
+
+            for (let i = 1; i <= NUM_PRINTS; i++) {
+                imgIds.push(i);
+            }
+
+            shuffleArray(imgIds);
+
+            for (let i of imgIds) {
+                imgElStrs.push(`
+                    <div class="gallery-image-container">
+                        <img data-id="${i}" class="gallery-image" src="prints/${i}.jpg" onclick="openModal();" />
+                    </div>
+                `);
+            }
+
+            printsGalleryInner.innerHTML = imgElStrs.join("\n");
+        });
+
+        document.getElementById("prints-gallery").addEventListener("click", e => {
+            if (e.target.classList.contains('gallery-image')) {
+                return;
+            }
+            const printsGallery = document.getElementById("prints-gallery");
+            printsGallery.style.display = 'none';
+        });
+       
+        document.addEventListener("click", e => {
+            if (e && e.target.classList.contains('gallery-image')) {
+                let img = document.createElement('img');
+                img.style.width = "100%";
+                img.src = `prints/${e.target.dataset.id}.jpg`;
+
+                document.getElementById('lightbox-content').appendChild(img);
+
+                let txt = document.createElement('a');
+                txt.href = `
+                    mailto: allthese.isms@gmail.com?subject=Subconscious.design - Print request - print #${e.target.dataset.id}
+                `;
+                txt.innerHTML = "Request";
+
+                document.getElementById('lightbox-content').prepend(txt);
+            } else if (e && e.target.id == 'lightbox') {
+                closeModal();
+            }
+        });
+
+        function openModal() {
+            document.getElementById("lightbox").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("lightbox").style.display = "none";
+            document.getElementById("lightbox-content").innerHTML = "";
+        }
+
+        function shuffleArray(array) {
+            for (var i = array.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+        }
+    </script>
+
 </html>
