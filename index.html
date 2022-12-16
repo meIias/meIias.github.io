@@ -11,7 +11,7 @@
         <link rel="icon" type="image/png" sizes="16x16" href="https://moeelias.com/static/favicon-16x16.png">
 
         <title>
-            The View from the Mind's Eye
+            ALL I SEE
         </title>
         <style>
             @font-face {
@@ -19,22 +19,25 @@
                 src: url("./font/MochiyPopOne-Regular.ttf")
             }
 
+            @font-face {
+                font-family: curse;
+                src: url("./font/MonsieurLaDoulaise-Regular.ttf")
+            }
+
             body {
                 margin: 0;
                 display: flex;
                 min-height: 100%;
+                background-size: 80%;
                 flex-direction: column;
                 justify-content: center;
-                background-color: #fffbd2;
+                background-color: #000000;
+                background-position: center; 
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                background-image: url("./static/bg.jpg");
             }
             
-            #main-image {
-                width: 100%;
-                margin: auto;
-                align-self: center;
-                image-rendering: crisp-edges;
-            }
-
             a {
                 color: #9CFF89;
                 font-size: 1.25em;
@@ -47,12 +50,32 @@
                 color: #7ccc6d;
             }
 
-            #footer {
+            #header {
                 width: 100%;
                 display: flex;
+                padding-top: 16px;
                 align-self: center;
-                padding-bottom: 16px;
                 justify-content: space-around;
+            }
+
+            #footer {
+                left: 0;
+                bottom: 0; 
+                width: 90%;
+                padding: 16px;
+                display: flex;
+                margin-top: 16px;
+                position: absolute;
+                z-index: 0;
+                justify-content: right;
+            }
+
+            #title-btn {
+                color: white;
+                font-size: 6em;
+                text-align: center;
+                text-decoration: none;
+                font-family: "curse", Arial;
             }
 
             #prints-gallery {
@@ -138,11 +161,13 @@
             <div id="lightbox-content"></div>
         </div>
 
-        <img id="main-image" src="./static/logo.png" />
+        <div id="header">
+            <a id="prints-btn" href="javascript:void(0);">Prints</a>
+            <a href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a>
+        </div>
 
         <div id="footer">
-            <a id="prints-btn" href="javascript:void(0);">Prints</a>
-            <a href="mailto: allthese.isms@gmail.com?subject=Hello">Reach Us</a>
+            <span id="title-btn">All i see. is Moe</span>
         </div>
     </body>
 
@@ -175,6 +200,9 @@
                 `);
             }
 
+            document.getElementById("footer").style.display = "none";
+            document.getElementById("header").style.display = "none";
+
             printsGalleryInner.innerHTML = imgElStrs.join("\n");
         });
 
@@ -184,6 +212,9 @@
             }
             const printsGallery = document.getElementById("prints-gallery");
             printsGallery.style.display = 'none';
+
+            document.getElementById("footer").style.display = "flex";
+            document.getElementById("header").style.display = "flex";
         });
        
         document.addEventListener("click", e => {
