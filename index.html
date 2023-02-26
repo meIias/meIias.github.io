@@ -22,21 +22,23 @@
             body {
                 margin: 0;
                 display: flex;
-                min-height: 100%;
-                background-size: 100%;
                 flex-direction: column;
                 justify-content: space-between;
                 background-color: #000000;
                 background-position: center; 
                 background-attachment: fixed;
                 background-repeat: no-repeat;
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                background-size: cover;
                 background-image: url("./prints/22.jpg");
             }
             
             a {
                 padding: 8px;
                 color: #9CFF89;
-                font-size: 3em;
+                font-size: 4vw;
                 text-decoration: none;
                 font-family: "mochi", Arial;
             }
@@ -57,19 +59,19 @@
             #footer {
                 left: 0;
                 bottom: 0; 
-                width: 100%;
-                padding: 16px;
-                display: flex;
-                margin-top: 16px;
                 z-index: 0;
+                width: 100%;
+                display: flex;
+                position: absolute;
                 justify-content: right;
             }
 
             #title-btn {
                 color: white;
-                font-size: 6em;
+                font-size: 7vw;
                 text-align: center;
-                padding-right: 62px;
+                padding-right: 2vw;
+                padding-bottom: 16px;
                 text-decoration: none;
                 font-family: "mochi", Arial;
             }
