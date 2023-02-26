@@ -19,23 +19,18 @@
                 src: url("./font/MochiyPopOne-Regular.ttf")
             }
 
-            @font-face {
-                font-family: curse;
-                src: url("./font/MonsieurLaDoulaise-Regular.ttf")
-            }
-
             body {
                 margin: 0;
                 display: flex;
                 min-height: 100%;
-                background-size: 80%;
+                background-size: 100%;
                 flex-direction: column;
                 justify-content: space-between;
                 background-color: #000000;
                 background-position: center; 
                 background-attachment: fixed;
                 background-repeat: no-repeat;
-                background-image: url("./static/bg.jpg");
+                background-image: url("./prints/22.jpg");
             }
             
             a {
@@ -43,7 +38,7 @@
                 color: #9CFF89;
                 font-size: 3em;
                 text-decoration: none;
-                font-family: "curse", Arial;
+                font-family: "mochi", Arial;
             }
 
             a:hover {
@@ -62,11 +57,10 @@
             #footer {
                 left: 0;
                 bottom: 0; 
-                width: 90%;
+                width: 100%;
                 padding: 16px;
                 display: flex;
                 margin-top: 16px;
-                position: absolute;
                 z-index: 0;
                 justify-content: right;
             }
@@ -75,8 +69,9 @@
                 color: white;
                 font-size: 6em;
                 text-align: center;
+                padding-right: 62px;
                 text-decoration: none;
-                font-family: "curse", Arial;
+                font-family: "mochi", Arial;
             }
 
             #prints-gallery {
@@ -164,7 +159,9 @@
 
         <div id="header">
             <a id="prints-btn" href="javascript:void(0);">Prints</a>
-            <!--<a href="https://drowninginthesunset.bandcamp.com">Music</a>-->
+            <a id="design-btn" href="javascript:void(0);">Design</a>
+            <a href="https://allisee.bandcamp.com">Music</a>
+            <a id="about-btn" href="javascript:void(0);">About</a>
             <a href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a>
         </div>
 
