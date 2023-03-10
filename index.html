@@ -23,23 +23,25 @@
                 margin: 0;
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
                 background-color: #000000;
                 background-position: center; 
                 background-attachment: fixed;
                 background-repeat: no-repeat;
-                -webkit-background-size: cover;
-                -moz-background-size: cover;
-                -o-background-size: cover;
                 background-size: cover;
+                -o-background-size: cover;
+                -moz-background-size: cover;
+                -webkit-background-size: cover;
+                justify-content: space-between;
                 background-image: url("./prints/22.jpg");
             }
             
             a {
                 padding: 8px;
                 color: #9CFF89;
-                font-size: 4vw;
+                font-size: 3vw;
+                align-self: center;
                 text-decoration: none;
+                background-color: black;
                 font-family: "mochi", Arial;
             }
 
@@ -50,28 +52,34 @@
             #header {
                 width: 100%;
                 display: flex;
-                flex-wrap: wrap;
-                padding-top: 16px;
+                padding: 24px;
+                padding-top: 64px;
+                flex-wrap: nowrap;
                 align-self: center;
-                justify-content: space-around;
-            }
-
-            #footer {
-                left: 0;
-                bottom: 0; 
-                z-index: 0;
-                width: 100%;
-                display: flex;
-                position: absolute;
-                justify-content: right;
             }
 
             #title-btn {
                 color: white;
-                font-size: 7vw;
+                padding: 8px;
+                font-size: 5vw;
+                padding-bottom: 0;
                 text-align: center;
-                padding-right: 2vw;
-                padding-bottom: 16px;
+                text-decoration: none;
+                font-family: "mochi", Arial;
+            }
+
+            #title-holder {
+                display: flex;
+                flex-direction: column;
+                background-color: black;
+            }
+
+            #title-subtext {
+                color: gray;
+                padding: 8px;
+                padding-top: 0;
+                font-size: 2vw;
+                text-align: center;
                 text-decoration: none;
                 font-family: "mochi", Arial;
             }
@@ -147,29 +155,67 @@
                 cursor: pointer;
                 text-decoration: none;
             }
+
+            ul {
+                display: flex;
+                list-style: none;
+                flex-direction: column;
+                padding-inline-start: 0;
+            }
+
+            li {
+                padding: 24px;
+            }
+
+            @media (max-width: 768px) {
+
+                a {
+                    font-size: 9vw;
+                }
+
+                #title-subtext {
+                    font-size: 5vw;
+                }
+
+                #title-btn {
+                    font-size: 10vw;
+                }
+            }
         </style>
     </head>
+
     <body>
-        <div id="prints-gallery">
-            <div id="prints-gallery-inner"></div>
-        </div>
+        <header>
+            <nav>
+                <div id="header" class="hideaways">
+                    <div id="title-holder">
+                        <span id="title-btn">All i see. is Moe</span>
+                        <span id="title-subtext">Creative Services</span>
+                    </div>
+                </div>
+            </nav>
+        </header>
 
-        <div id="lightbox">
-            <span class="close cursor" onclick="closeModal()">&times;</span>
-            <div id="lightbox-content"></div>
-        </div>
+        <main>
+            <article>
+                <ul class="menu">
+                    <li><a id="prints-btn" href="javascript:void(0);">Prints</a></li>
+                    <li><a id="design-btn" href="javascript:void(0);">Design</a></li>
+                    <li><a href="https://allisee.bandcamp.com">Music</a></li>
+                    <li><a id="about-btn" href="javascript:void(0);">About</a></li>
+                    <li><a href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a></li>
+                </ul>
 
-        <div id="header">
-            <a id="prints-btn" href="javascript:void(0);">Prints</a>
-            <a id="design-btn" href="javascript:void(0);">Design</a>
-            <a href="https://allisee.bandcamp.com">Music</a>
-            <a id="about-btn" href="javascript:void(0);">About</a>
-            <a href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a>
-        </div>
+                <div id="prints-gallery">
+                    <div id="prints-gallery-inner"></div>
+                </div>
 
-        <div id="footer">
-            <span id="title-btn">All i see. is Moe</span>
-        </div>
+                <div id="lightbox">
+                    <span class="close cursor" onclick="closeModal()">&times;</span>
+                    <div id="lightbox-content"></div>
+                </div>
+            </article>
+        </main>
     </body>
 
     <script>
@@ -196,13 +242,13 @@
             for (let i of imgIds) {
                 imgElStrs.push(`
                     <div class="gallery-image-container">
-                        <img data-id="${i}" class="gallery-image" src="prints/${i}.jpg" onclick="openModal();" style="cursor: pointer;" />
+                       <img alt="pattern-${i}" data-id="${i}" class="gallery-image" src="prints/${i}.jpg" onclick="openModal();" style="cursor: pointer;" />
                     </div>
                 `);
             }
 
-            document.getElementById("footer").style.display = "none";
             document.getElementById("header").style.display = "none";
+            document.getElementsByClassName("menu")[0].style.display = "none";
 
             printsGalleryInner.innerHTML = imgElStrs.join("\n");
         });
@@ -214,8 +260,8 @@
             const printsGallery = document.getElementById("prints-gallery");
             printsGallery.style.display = 'none';
 
-            document.getElementById("footer").style.display = "flex";
             document.getElementById("header").style.display = "flex";
+            document.getElementsByClassName("menu")[0].style.display = "flex";
         });
        
         document.addEventListener("click", e => {
