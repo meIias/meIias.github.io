@@ -11,7 +11,7 @@
         <link rel="icon" type="image/png" sizes="16x16" href="https://moeelias.com/static/favicon-16x16.png">
 
         <title>
-            ALL I SEE
+            Moe Elias
         </title>
         <style>
             @font-face {
@@ -38,15 +38,11 @@
             a {
                 padding: 8px;
                 color: #9CFF89;
-                font-size: 3.5vw;
+                font-size: 4vw;
                 align-self: center;
                 text-decoration: none;
                 background-color: black;
                 font-family: "mochi", Arial;
-            }
-
-            a:hover {
-                color: #7ccc6d;
             }
 
             #header {
@@ -55,50 +51,6 @@
                 padding-bottom: 0;
                 flex-wrap: nowrap;
                 align-self: center;
-            }
-
-            #title-btn {
-                color: white;
-                padding: 8px;
-                font-size: 4vw;
-                text-align: center;
-                text-decoration: none;
-                font-family: "mochi", Arial;
-            }
-
-            #title-holder {
-                display: flex;
-                flex-direction: column;
-                background-color: black;
-            }
-
-            #title-subtext {
-                color: gray;
-                padding: 8px;
-                padding-top: 0;
-                font-size: 2vw;
-                text-align: center;
-                text-decoration: none;
-                font-family: "mochi", Arial;
-            }
-
-            #prints-gallery {
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                display: none;
-                overflow: hidden;
-                position: absolute;
-            }
-
-            #prints-gallery-inner {
-                display: flex;
-                padding: 16px;
-                flex-wrap: wrap;
-                overflow-x: hidden;
-                overflow-y: scroll;
-                justify-content: space-evenly;
             }
 
             .gallery-image {
@@ -115,28 +67,6 @@
             .gallery-image-container {
                 padding: 16px;
                 display: inline-block;
-            }
-
-            #lightbox {
-                top: 0;
-                left: 0;
-                z-index: 1;
-                width: 100%;
-                height: 100%;
-                display: none;
-                overflow: auto;
-                position: fixed;
-                padding-top: 60px;
-                background-color: black;
-            }
-
-            #lightbox-content {
-                padding: 0;
-                width: 60%;
-                margin: auto;
-                max-width: 1200px;
-                position: relative;
-                background-color: gray;
             }
 
             .close {
@@ -156,27 +86,39 @@
 
             ul {
                 display: flex;
+                position: fixed;
                 list-style: none;
-                margin-top: 24px;
                 flex-direction: column;
                 padding-inline-start: 0;
             }
 
             li {
                 padding: 24px;
+                cursor: pointer;
+            }
+
+            li:first-child {
+                padding-top: 0;
+            }
+
+            .right-section-container {
+                display: flex;
+            }
+
+            .left-section {
+                flex: .5;
+                padding: 1rem;
+                padding-top: 48px;
+            }
+            
+            .right-section {
+                flex: 1;
+                padding: 1rem;
+                padding-top: 48px;
             }
 
             @media (max-width: 768px) {
-
                 a {
-                    font-size: 9vw;
-                }
-
-                #title-subtext {
-                    font-size: 5vw;
-                }
-
-                #title-btn {
                     font-size: 9vw;
                 }
             }
@@ -184,52 +126,88 @@
     </head>
 
     <body>
-        <header>
+        <header id="header">
             <nav>
-                <div id="header" class="hideaways">
-                    <div id="title-holder">
-                        <span id="title-btn">All i see. is Moe</span>
-                    </div>
-                </div>
             </nav>
         </header>
 
         <main>
             <article>
-                <ul class="menu">
-                    <li><a id="prints-btn" href="javascript:void(0);">Prints</a></li>
-                    <li><a id="design-btn" href="javascript:void(0);">Design</a></li>
-                    <li><a href="https://allisee.bandcamp.com">Music</a></li>
-                    <li><a id="about-btn" href="javascript:void(0);">About</a></li>
-                    <li><a href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a></li>
-                </ul>
+                <div class="right-section-container">
+                    <div class="left-section">
+                        <ul class="menu">
+                            <li><a id="prints-btn" class="nav-btn">Prints</a></li>
+                            <li><a id="design-btn" class="nav-btn">Design</a></li>
+                            <li><a id="music-btn" class="nav-btn" href="https://moeeliasmusic.bandcamp.com">Music</a></li>
+                            <li><a id="about-btn" class="nav-btn">About</a></li>
+                            <li><a id="contact-btn" class="nav-btn" href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a></li>
+                        </ul>
+                    </div>
 
-                <div id="prints-gallery">
-                    <div id="prints-gallery-inner"></div>
-                </div>
-
-                <div id="lightbox">
-                    <span class="close cursor" onclick="closeModal()">&times;</span>
-                    <div id="lightbox-content"></div>
+                    <div class="right-section">
+                    </div>
                 </div>
             </article>
         </main>
     </body>
 
     <script>
+        const STATE = {};
+
         const NUM_PRINTS = 22;
 
+        document.querySelectorAll(".nav-btn").forEach(el => {
+            el.addEventListener("mouseenter", e => e.target.style.color = "#3e6636");
+
+            el.addEventListener("mouseleave", e => {
+                if (!STATE  || !STATE.buttonId || e.target.id != STATE.buttonId) {
+                    e.target.style.color = "#9CFF89";
+                }
+            });
+        });
+
         document.getElementById("prints-btn").addEventListener("click", () => {
+            showPrintsGallery();
+        });
+
+        document.getElementsByClassName("right-section")[0].addEventListener("click", e => {
+            if (e.target.classList.contains('gallery-image')
+                || e.target.classList.contains('blown-up-img')
+            ) {
+                return;
+            }
+
+            resetSectionSelection();
+        });
+       
+        document.addEventListener("click", e => {
+            if (e && e.target.classList.contains('blown-up-img')) {
+                return;
+            } else if (e && e.target.classList.contains('gallery-image')) {
+                displayBlownUpImage(e);
+            } else if (e && e.target.classList.contains('left-section')) {
+                resetSectionSelection();
+            }
+        });
+
+        function resetSectionSelection() {
+            setRightSection();
+            resetButtonSelection("prints-btn");
+        }
+
+        function displayBlownUpImage(e) {
+            let img = document.createElement('img');
+            img.style.width = "100%";
+            img.src = `prints/${e.target.dataset.id}.jpg`;
+            img.classList.add("blown-up-img");
+
+            setRightSection();
+            document.getElementsByClassName("right-section")[0].prepend(img);
+        }
+
+        function showPrintsGallery() {
             let imgIds = [];
             let imgElStrs = [];
-
-            const printsGalleryInner = document.getElementById("prints-gallery-inner");
-            const printsGallery = document.getElementById("prints-gallery");
-            const printsGalStyle = getComputedStyle(printsGallery);
-
-            if (printsGalStyle.display == 'none') {
-                printsGallery.style.display = 'flex';
-            }
 
             for (let i = 1; i <= NUM_PRINTS; i++) {
                 imgIds.push(i);
@@ -240,55 +218,19 @@
             for (let i of imgIds) {
                 imgElStrs.push(`
                     <div class="gallery-image-container">
-                       <img alt="pattern-${i}" data-id="${i}" class="gallery-image" src="prints/${i}.jpg" onclick="openModal();" style="cursor: pointer;" />
+                       <img 
+                            alt="pattern-${i}"
+                            data-id="${i}"
+                            class="gallery-image"
+                            src="prints/${i}.jpg"
+                            style="cursor: pointer;" />
                     </div>
                 `);
             }
 
-            document.getElementById("header").style.display = "none";
-            document.getElementsByClassName("menu")[0].style.display = "none";
+            setRightSection(imgElStrs.join("\n"))
 
-            printsGalleryInner.innerHTML = imgElStrs.join("\n");
-        });
-
-        document.getElementById("prints-gallery").addEventListener("click", e => {
-            if (e.target.classList.contains('gallery-image')) {
-                return;
-            }
-            const printsGallery = document.getElementById("prints-gallery");
-            printsGallery.style.display = 'none';
-
-            document.getElementById("header").style.display = "flex";
-            document.getElementsByClassName("menu")[0].style.display = "flex";
-        });
-       
-        document.addEventListener("click", e => {
-            if (e && e.target.classList.contains('gallery-image')) {
-                let img = document.createElement('img');
-                img.style.width = "100%";
-                img.src = `prints/${e.target.dataset.id}.jpg`;
-
-                document.getElementById('lightbox-content').appendChild(img);
-
-                let txt = document.createElement('a');
-                txt.href = `
-                    mailto: allthese.isms@gmail.com?subject=ALL&nbsp;I&nbsp;SEE&nbsp;is&nbsp;Moe - Print request - print #${e.target.dataset.id}
-                `;
-                txt.innerHTML = "Request";
-
-                document.getElementById('lightbox-content').prepend(txt);
-            } else if (e && e.target.id == 'lightbox') {
-                closeModal();
-            }
-        });
-
-        function openModal() {
-            document.getElementById("lightbox").style.display = "block";
-        }
-
-        function closeModal() {
-            document.getElementById("lightbox").style.display = "none";
-            document.getElementById("lightbox-content").innerHTML = "";
+            showButtonAsSelected("prints-btn");
         }
 
         function shuffleArray(array) {
@@ -299,6 +241,21 @@
                 array[j] = temp;
             }
         }
+
+        function setRightSection(s = "") {
+            document.getElementsByClassName("right-section")[0].innerHTML = s;
+        }
+
+        function showButtonAsSelected(buttonId) {
+            STATE.buttonId = buttonId;
+            document.getElementById(buttonId).style.color = "#3e6636";
+        }
+
+        function resetButtonSelection(buttonId) {
+            STATE.buttonId = "";
+            document.getElementById(buttonId).style.color = "#9CFF89";
+        }
+
     </script>
 
 </html>
