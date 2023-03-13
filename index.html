@@ -21,7 +21,7 @@
 
             body {
                 margin: 0;
-                display: flex;
+                height: 100%;
                 flex-direction: column;
                 background-color: #000000;
                 background-position: center; 
@@ -34,14 +34,14 @@
                 justify-content: space-between;
                 background-image: url("./prints/22.jpg");
             }
-            
+           
             a {
                 padding: 8px;
                 color: #9CFF89;
                 font-size: 4vw;
                 align-self: center;
                 text-decoration: none;
-                background-color: black;
+                background: rgba(0,0,0,0.9);
                 font-family: "mochi", Arial;
             }
 
@@ -94,6 +94,7 @@
 
             li {
                 padding: 24px;
+                padding-left: 36px;
                 cursor: pointer;
             }
 
@@ -107,14 +108,19 @@
 
             .left-section {
                 flex: .5;
-                padding: 1rem;
+                z-index: 0;
                 padding-top: 48px;
             }
             
             .right-section {
                 flex: 1;
+                z-index: 1;
                 padding: 1rem;
                 padding-top: 48px;
+                padding-right: 48px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
 
             @media (max-width: 768px) {
@@ -136,10 +142,8 @@
                 <div class="right-section-container">
                     <div class="left-section">
                         <ul class="menu">
-                            <li><a id="prints-btn" class="nav-btn">Prints</a></li>
-                            <li><a id="design-btn" class="nav-btn">Design</a></li>
                             <li><a id="music-btn" class="nav-btn" href="https://moeeliasmusic.bandcamp.com">Music</a></li>
-                            <li><a id="about-btn" class="nav-btn">About</a></li>
+                            <li><a id="prints-btn" class="nav-btn">Prints</a></li>
                             <li><a id="contact-btn" class="nav-btn" href="mailto: allthese.isms@gmail.com?subject=Hello">Contact</a></li>
                         </ul>
                     </div>
@@ -173,7 +177,7 @@
         document.getElementsByClassName("right-section")[0].addEventListener("click", e => {
             if (e.target.classList.contains('gallery-image')
                 || e.target.classList.contains('blown-up-img')
-            ) {
+                || e.target.id == "right-section-body") {
                 return;
             }
 
@@ -197,7 +201,8 @@
 
         function displayBlownUpImage(e) {
             let img = document.createElement('img');
-            img.style.width = "100%";
+            img.style.width = "50%";
+            img.style.border = "8px solid black";
             img.src = `prints/${e.target.dataset.id}.jpg`;
             img.classList.add("blown-up-img");
 
@@ -255,7 +260,6 @@
             STATE.buttonId = "";
             document.getElementById(buttonId).style.color = "#9CFF89";
         }
-
     </script>
 
 </html>
