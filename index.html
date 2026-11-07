@@ -351,6 +351,7 @@
             const gallery = document.getElementById("gallery");
             const loaded = {};
             let ready = false;
+            let lastWidth = null;
 
             function preloadDimensions(callback) {
                 let remaining = IMAGES.length;
@@ -375,9 +376,14 @@
             // wider authored rows are re-chunked into pairs so images stay big.
             function layoutGallery() {
                 if (!ready) return;
-                gallery.innerHTML = "";
 
+                // Mobile browsers fire "resize" whenever the address bar shows
+                // or hides, which only changes the height. Row sizes depend
+                // only on width, so skip those to leave scrolling undisturbed.
                 const containerWidth = gallery.clientWidth;
+                if (containerWidth === lastWidth) return;
+                lastWidth = containerWidth;
+
                 const isMobile = window.innerWidth <= 768;
                 const gutter = 2;
 
@@ -401,6 +407,9 @@
                     }
                 }
 
+                // Build off-DOM and swap in one step: emptying the gallery first
+                // would collapse the page and reset the scroll position to the top.
+                const fragment = document.createDocumentFragment();
                 rows.forEach(group => {
                     const sum = group.reduce((s, img) => s + aspectOf(img), 0);
                     const rowHeight = (containerWidth - gutter * (group.length - 1)) / sum;
@@ -416,8 +425,9 @@
                         imgEl.addEventListener("click", () => openLightbox(s));
                         rowEl.appendChild(imgEl);
                     });
-                    gallery.appendChild(rowEl);
+                    fragment.appendChild(rowEl);
                 });
+                gallery.replaceChildren(fragment);
             }
 
             function openLightbox(imgSrc) {
