@@ -136,6 +136,90 @@
                 margin-right: 0;
             }
 
+            /* Loading spinner: a thin ring that spins until the image has
+               arrived, then the image fades in over it. */
+            .cell {
+                position: relative;
+                flex: none;
+                margin-right: 2px;
+                background: rgba(255, 255, 255, 0.03);
+            }
+
+            .cell:last-child {
+                margin-right: 0;
+            }
+
+            .gallery-row .cell img {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                opacity: 0;
+                transition: opacity 0.4s ease;
+            }
+
+            .cell.loaded img {
+                opacity: 1;
+            }
+
+            .spinner,
+            .cell:not(.loaded)::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 26px;
+                height: 26px;
+                margin: -13px 0 0 -13px;
+                border-radius: 50%;
+                border: 2px solid rgba(232, 232, 232, 0.15);
+                border-top-color: rgba(232, 232, 232, 0.8);
+                animation: spin 0.9s linear infinite;
+                pointer-events: none;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .spinner,
+                .cell:not(.loaded)::after {
+                    animation-duration: 3s;
+                }
+            }
+
+            /* Full-page spinner: in the HTML so it shows from the very first
+               paint, then fades out once the first images have loaded. */
+            .page-loading {
+                position: fixed;
+                inset: 0;
+                z-index: 15;
+                pointer-events: none;
+                transition: opacity 0.4s ease;
+            }
+
+            .page-loading .spinner {
+                width: 34px;
+                height: 34px;
+                margin: -17px 0 0 -17px;
+            }
+
+            .page-loading.done {
+                opacity: 0;
+            }
+
+            .lightbox .spinner {
+                display: none;
+            }
+
+            .lightbox.waiting .spinner {
+                display: block;
+            }
+
+            .lightbox.waiting img {
+                visibility: hidden;
+            }
+
             .lightbox {
                 position: fixed;
                 inset: 0;
@@ -175,9 +259,14 @@
             <a class="back" href="../">&larr; back</a>
         </header>
 
+        <div class="page-loading" id="page-loading" aria-label="loading">
+            <div class="spinner"></div>
+        </div>
+
         <main class="gallery" id="gallery"></main>
 
         <div class="lightbox" id="lightbox">
+            <div class="spinner" aria-label="loading"></div>
             <img id="lightbox-img" src="" alt="">
         </div>
 
@@ -272,19 +361,47 @@
                         // Only fetch images as they approach the screen.
                         imgEl.loading = "lazy";
                         imgEl.decoding = "async";
-                        imgEl.style.height = rowHeight + "px";
-                        imgEl.style.width = (rowHeight * aspectOf(s)) + "px";
+                        // Each image sits in a cell that shows a spinner
+                        // until the image has loaded.
+                        const cell = document.createElement("div");
+                        cell.className = "cell";
+                        cell.style.height = rowHeight + "px";
+                        cell.style.width = (rowHeight * aspectOf(s)) + "px";
+                        const done = () => {
+                            cell.classList.add("loaded");
+                            pageReady();
+                        };
+                        imgEl.addEventListener("load", done);
+                        imgEl.addEventListener("error", done);
+                        if (imgEl.complete && imgEl.naturalWidth) done();
                         imgEl.addEventListener("click", () => openLightbox(full(s)));
-                        rowEl.appendChild(imgEl);
+                        cell.appendChild(imgEl);
+                        rowEl.appendChild(cell);
                     });
                     fragment.appendChild(rowEl);
                 });
                 gallery.replaceChildren(fragment);
             }
 
+            // Hide the page spinner once the first few images are in (or
+            // after a few seconds, so it never lingers).
+            let firstLoads = 0;
+            function pageReady() {
+                if (++firstLoads === 3) hidePageSpinner();
+            }
+            function hidePageSpinner() {
+                document.getElementById("page-loading").classList.add("done");
+            }
+            setTimeout(hidePageSpinner, 8000);
+
             function openLightbox(imgSrc) {
-                document.getElementById("lightbox-img").src = imgSrc;
-                document.getElementById("lightbox").classList.add("open");
+                const box = document.getElementById("lightbox");
+                const img = document.getElementById("lightbox-img");
+                // Spinner while the full-size image loads.
+                box.classList.add("open", "waiting");
+                img.onload = img.onerror = () => box.classList.remove("waiting");
+                img.src = imgSrc;
+                if (img.complete && img.naturalWidth) box.classList.remove("waiting");
             }
 
             document.getElementById("lightbox").addEventListener("click", () => {
