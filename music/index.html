@@ -1,3 +1,9 @@
+<!--
+    Home and /music are the same page: sky.js shows the view that matches
+    the URL and switches between them in place (no reload). This file is
+    duplicated at /music/index.html so direct visits to /music/ work on
+    GitHub Pages -- keep the two identical.
+-->
 <html>
     <head>
         <meta charset="utf-8">
@@ -10,12 +16,11 @@
         <link rel="apple-touch-icon" sizes="180x180" href="https://moeelias.com/static/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="32x32" href="https://moeelias.com/static/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="https://moeelias.com/static/favicon-16x16.png">
-        <link rel="preload" as="image" href="../images/bg.jpg">
+        <link rel="preload" as="image" href="/images/bg.jpg">
 
-        <title>music · moe of sf, ca.</title>
+        <title>moe of sf, ca.</title>
 
-        <!-- Shared with the home page: photo, ripple, scattered sky text. -->
-        <link rel="stylesheet" href="../assets/sky.css">
+        <link rel="stylesheet" href="/assets/sky.css">
     </head>
 
     <body>
@@ -25,20 +30,33 @@
 
         <!-- Each .float is scattered randomly across the sky by sky.js. -->
         <nav class="sky">
-            <div class="float brand">
-                <span class="t">moeee</span>
-                <span class="t sub">of sf, ca.</span>
+            <div class="group" data-view="home">
+                <div class="float brand">
+                    <span class="t">moeee</span>
+                    <span class="t sub">of sf, ca.</span>
+                </div>
+                <div class="float"><a class="t" href="/music/" data-view="music">music</a></div>
+                <div class="float"><a class="t" href="/gallery/">gallery</a></div>
+                <div class="float"><a class="t js-mail" href="#">contact</a></div>
+                <div class="float"><span class="t">&ldquo;guitar maximalism&rdquo;</span></div>
             </div>
-            <div class="float"><a class="t" href="https://moeelias.bandcamp.com" target="_blank" rel="noopener">bandcamp</a></div>
-            <div class="float"><a class="t" href="https://open.spotify.com/artist/7EHS4g9wcXnncAn8bNTy2W" target="_blank" rel="noopener">spotify</a></div>
-            <div class="float"><a class="t" href="https://music.apple.com/us/artist/moe-elias/1698265886" target="_blank" rel="noopener">apple music</a></div>
-            <div class="float"><a class="t" href="https://music.youtube.com/channel/UC7NlPnEPriYgXgkydyEXe-w" target="_blank" rel="noopener">youtube music</a></div>
-            <div class="float"><a class="t" href="https://www.deezer.com/artist/84204482" target="_blank" rel="noopener">deezer</a></div>
-            <div class="float"><a class="t" href="../">&larr; back</a></div>
+
+            <div class="group" data-view="music" hidden>
+                <div class="float brand">
+                    <span class="t">moeee</span>
+                    <span class="t sub">of sf, ca.</span>
+                </div>
+                <div class="float"><a class="t" href="https://moeelias.bandcamp.com" target="_blank" rel="noopener">bandcamp</a></div>
+                <div class="float"><a class="t" href="https://open.spotify.com/artist/7EHS4g9wcXnncAn8bNTy2W" target="_blank" rel="noopener">spotify</a></div>
+                <div class="float"><a class="t" href="https://music.apple.com/us/artist/moe-elias/1698265886" target="_blank" rel="noopener">apple music</a></div>
+                <div class="float"><a class="t" href="https://music.youtube.com/channel/UC7NlPnEPriYgXgkydyEXe-w" target="_blank" rel="noopener">youtube music</a></div>
+                <div class="float"><a class="t" href="https://www.deezer.com/artist/84204482" target="_blank" rel="noopener">deezer</a></div>
+                <div class="float"><a class="t" href="/" data-view="home">&larr; back</a></div>
+            </div>
         </nav>
 
         <footer class="copyright"><span id="year">2026</span>&copy;</footer>
 
-        <script src="../assets/sky.js"></script>
+        <script src="/assets/sky.js"></script>
     </body>
 </html>

@@ -59,7 +59,38 @@
     // same picks unless the width changes (e.g. rotating a phone).
     // ---------------------------------------------------------------------
     const rand = (lo, hi) => lo + Math.random() * (hi - lo);
-    let picks = null, pickedWidth = null;
+    // Random picks are kept per view, so going back to a view shows the
+    // same arrangement you left.
+    const memory = {};
+
+    // ---------------------------------------------------------------------
+    // Views: the page holds every view's items (home, music) in groups.
+    // Switching just hides one group and scatters the other over the same
+    // sky, so there's no page load. The URL follows along (/ and /music/)
+    // and the back button works.
+    // ---------------------------------------------------------------------
+    const viewFromPath = () => (/^\/music\/?$/.test(location.pathname) ? "music" : "home");
+    let view = viewFromPath();
+
+    function showView(next) {
+        view = next;
+        document.querySelectorAll(".sky .group").forEach(g => {
+            g.hidden = g.dataset.view !== view;
+        });
+        document.title = view === "music" ? "music · moe of sf, ca." : "moe of sf, ca.";
+        scatter();
+    }
+
+    // In-page navigation for links marked data-view.
+    document.addEventListener("click", e => {
+        const a = e.target.closest("a[data-view]");
+        if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        if (a.dataset.view === view) return;
+        history.pushState({ view: a.dataset.view }, "", a.getAttribute("href"));
+        showView(a.dataset.view);
+    });
+    window.addEventListener("popstate", () => showView(viewFromPath()));
 
     // A solid 3D edge `px` deep, out of as few shadows as possible. Each
     // drop-shadow copies everything drawn so far (letters plus earlier
@@ -80,8 +111,10 @@
 
     function scatter() {
         const sky = document.querySelector(".sky");
-        const items = [...document.querySelectorAll(".float")];
+        const items = [...document.querySelectorAll(".sky .group:not([hidden]) .float")];
         if (!sky || !items.length) return;
+        const mem = memory[view] || (memory[view] = { picks: null, width: null });
+        let picks = mem.picks;
         document.body.classList.add("scattered");
 
         const vmin = Math.min(window.innerWidth, window.innerHeight);
@@ -90,7 +123,7 @@
         const maxSize = Math.max(22, Math.min(46, vmin * 0.075)) * crowd;
         const minSize = Math.max(13, 14 * crowd);
 
-        if (!picks || picks.length !== items.length || pickedWidth !== window.innerWidth) {
+        if (!picks || picks.length !== items.length || mem.width !== window.innerWidth) {
             picks = items.map(() => ({
                 size: rand(minSize, Math.max(minSize + 4, maxSize)),
                 angle: rand(-7, 7),
@@ -100,7 +133,8 @@
                 depth: 0.12 + Math.random() ** 2 * 0.23,
                 pos: null,
             }));
-            pickedWidth = window.innerWidth;
+            mem.picks = picks;
+            mem.width = window.innerWidth;
         }
 
         const box = sky.getBoundingClientRect();
@@ -169,7 +203,7 @@
         document.dispatchEvent(new Event("skyplaced"));
     }
 
-    scatter();
+    showView(view);
     window.addEventListener("resize", scatter);
     if (document.fonts) document.fonts.ready.then(scatter);
 
@@ -411,7 +445,7 @@
         function measureText() {
             document.querySelectorAll(".ch").forEach(sp => { sp.style.transform = ""; });
             letters = [];
-            document.querySelectorAll(".t").forEach(el => {
+            document.querySelectorAll(".sky .group:not([hidden]) .t").forEach(el => {
                 const box = el.getBoundingClientRect();
                 el.style.setProperty("--W", `${box.width}px`);
                 el.querySelectorAll(".ch").forEach(sp => {
