@@ -136,6 +136,90 @@
                 margin-right: 0;
             }
 
+            /* Loading spinner: a thin ring that spins until the image has
+               arrived, then the image fades in over it. */
+            .cell {
+                position: relative;
+                flex: none;
+                margin-right: 2px;
+                background: rgba(255, 255, 255, 0.03);
+            }
+
+            .cell:last-child {
+                margin-right: 0;
+            }
+
+            .gallery-row .cell img {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                opacity: 0;
+                transition: opacity 0.4s ease;
+            }
+
+            .cell.loaded img {
+                opacity: 1;
+            }
+
+            .spinner,
+            .cell:not(.loaded)::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 26px;
+                height: 26px;
+                margin: -13px 0 0 -13px;
+                border-radius: 50%;
+                border: 2px solid rgba(232, 232, 232, 0.15);
+                border-top-color: rgba(232, 232, 232, 0.8);
+                animation: spin 0.9s linear infinite;
+                pointer-events: none;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .spinner,
+                .cell:not(.loaded)::after {
+                    animation-duration: 3s;
+                }
+            }
+
+            /* Full-page spinner: in the HTML so it shows from the very first
+               paint, then fades out once the first images have loaded. */
+            .page-loading {
+                position: fixed;
+                inset: 0;
+                z-index: 15;
+                pointer-events: none;
+                transition: opacity 0.4s ease;
+            }
+
+            .page-loading .spinner {
+                width: 34px;
+                height: 34px;
+                margin: -17px 0 0 -17px;
+            }
+
+            .page-loading.done {
+                opacity: 0;
+            }
+
+            .lightbox .spinner {
+                display: none;
+            }
+
+            .lightbox.waiting .spinner {
+                display: block;
+            }
+
+            .lightbox.waiting img {
+                visibility: hidden;
+            }
+
             .lightbox {
                 position: fixed;
                 inset: 0;
@@ -175,14 +259,27 @@
             <a class="back" href="../">&larr; back</a>
         </header>
 
+        <div class="page-loading" id="page-loading" aria-label="loading">
+            <div class="spinner"></div>
+        </div>
+
         <main class="gallery" id="gallery"></main>
 
         <div class="lightbox" id="lightbox">
+            <div class="spinner" aria-label="loading"></div>
             <img id="lightbox-img" src="" alt="">
         </div>
 
         <script>
-            const src = n => `../images/gallery/${String(n).padStart(2, "0")}.jpg`;
+            // Grid shows small WebP copies (~140KB each); the full-size JPEG
+            // only loads when an image is opened in the lightbox.
+            const src = n => `../images/gallery/grid/${String(n).padStart(2, "0")}.webp`;
+            const full = s => s.replace("/grid/", "/").replace(".webp", ".jpg");
+
+            // Image sizes, known up front so the grid lays out immediately
+            // instead of downloading every image first just to measure it.
+            // Update this if images are added or swapped.
+            const DIMS = {"1": [1400, 1400], "2": [1400, 1308], "3": [1287, 1400], "4": [1329, 1400], "5": [1081, 1400], "6": [1142, 1400], "7": [1400, 1400], "8": [1112, 1400], "9": [1137, 1400], "10": [1046, 1400], "11": [1098, 1400], "12": [1400, 1400], "13": [1050, 1400], "14": [1071, 1400], "15": [1050, 1400], "16": [1065, 1400], "17": [1400, 1387], "18": [1400, 1134], "19": [1120, 1400], "20": [1151, 1400]};
 
             // Hand-authored row breaks, copied exactly from the Cargo site's
             // gallery-justify markup (its justify-row-end="true" markers). This
@@ -205,21 +302,11 @@
             let ready = false;
             let lastWidth = null;
 
-            function preloadDimensions(callback) {
-                let remaining = IMAGES.length;
-                IMAGES.forEach(s => {
-                    const img = new Image();
-                    img.onload = () => {
-                        loaded[s] = { w: img.naturalWidth, h: img.naturalHeight };
-                        if (--remaining === 0) callback();
-                    };
-                    img.onerror = () => {
-                        loaded[s] = { w: 1, h: 1 };
-                        if (--remaining === 0) callback();
-                    };
-                    img.src = s;
-                });
-            }
+            ROWS.flat().forEach(s => {
+                const [w, h] = DIMS[Number(s.match(/(\d+)\.webp$/)[1])];
+                loaded[s] = { w, h };
+            });
+            ready = true;
 
             // Justified-row gallery: each row's images keep their own aspect
             // ratios at a shared row height, stretched to fill the width. On
@@ -271,19 +358,50 @@
                         const imgEl = document.createElement("img");
                         imgEl.src = s;
                         imgEl.alt = "";
-                        imgEl.style.height = rowHeight + "px";
-                        imgEl.style.width = (rowHeight * aspectOf(s)) + "px";
-                        imgEl.addEventListener("click", () => openLightbox(s));
-                        rowEl.appendChild(imgEl);
+                        // Only fetch images as they approach the screen.
+                        imgEl.loading = "lazy";
+                        imgEl.decoding = "async";
+                        // Each image sits in a cell that shows a spinner
+                        // until the image has loaded.
+                        const cell = document.createElement("div");
+                        cell.className = "cell";
+                        cell.style.height = rowHeight + "px";
+                        cell.style.width = (rowHeight * aspectOf(s)) + "px";
+                        const done = () => {
+                            cell.classList.add("loaded");
+                            pageReady();
+                        };
+                        imgEl.addEventListener("load", done);
+                        imgEl.addEventListener("error", done);
+                        if (imgEl.complete && imgEl.naturalWidth) done();
+                        imgEl.addEventListener("click", () => openLightbox(full(s)));
+                        cell.appendChild(imgEl);
+                        rowEl.appendChild(cell);
                     });
                     fragment.appendChild(rowEl);
                 });
                 gallery.replaceChildren(fragment);
             }
 
+            // Hide the page spinner once the first few images are in (or
+            // after a few seconds, so it never lingers).
+            let firstLoads = 0;
+            function pageReady() {
+                if (++firstLoads === 3) hidePageSpinner();
+            }
+            function hidePageSpinner() {
+                document.getElementById("page-loading").classList.add("done");
+            }
+            setTimeout(hidePageSpinner, 8000);
+
             function openLightbox(imgSrc) {
-                document.getElementById("lightbox-img").src = imgSrc;
-                document.getElementById("lightbox").classList.add("open");
+                const box = document.getElementById("lightbox");
+                const img = document.getElementById("lightbox-img");
+                // Spinner while the full-size image loads.
+                box.classList.add("open", "waiting");
+                img.onload = img.onerror = () => box.classList.remove("waiting");
+                img.src = imgSrc;
+                if (img.complete && img.naturalWidth) box.classList.remove("waiting");
             }
 
             document.getElementById("lightbox").addEventListener("click", () => {
@@ -296,11 +414,7 @@
                 resizeTimer = setTimeout(layoutGallery, 150);
             });
 
-            preloadDimensions(() => {
-                ready = true;
-                layoutGallery();
-            });
-            window.addEventListener("load", () => setTimeout(layoutGallery, 50));
+            layoutGallery();
         </script>
     </body>
 </html>

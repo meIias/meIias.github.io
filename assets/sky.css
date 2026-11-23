@@ -57,14 +57,24 @@ body {
     font-family: "Space Grotesk", Arial, sans-serif;
 }
 
-/* Blurred copy fills any edges the zoomed-out photo leaves bare. */
+/* Blurred copy fills any edges the zoomed-out photo leaves bare. It's
+   blurred heavily, so a tiny 24x32 inline copy is plenty: it shows
+   instantly, before the real photo arrives. */
 .bg-fill,
 .bg {
     position: absolute;
     inset: 0;
-    background-image: url("../images/bg.jpg");
     background-position: 50% 50%;
     background-repeat: no-repeat;
+}
+
+.bg-fill {
+    background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAgABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDmogB6VOVGMiueh1RgOmfpVpNWBbbt+bHSu3nRjyGoYye/FFZrak+OmM+xoo50JwOVSUBsfdBPUdqlSWWK5RwxII7nOR71VFFcZ0XL5v5GONxXB6bziiqFFILn/9k=");
+}
+
+/* The sharp photo: sky.js sets --bg-url to the right size for the screen. */
+.bg {
+    background-image: var(--bg-url, none);
 }
 
 .bg-fill {
@@ -203,8 +213,14 @@ a.t {
     background-repeat: no-repeat;
     -webkit-background-clip: text;
     background-clip: text;
-    /* No will-change here: on iOS Safari, giving each letter its own
-       compositing layer drops the parent's drop-shadow (the 3D edge). */
+}
+
+/* Browsers disagree here. Chrome/Firefox need each moving letter on its own
+   layer, or letters drop out mid-animation. Safari (WebKit) is the
+   opposite: with per-letter layers it skips the parent's drop-shadow, so
+   the 3D edge and halo vanish. sky.js adds .layered for non-WebKit. */
+.layered .ch {
+    will-change: transform;
 }
 
 .copyright {
