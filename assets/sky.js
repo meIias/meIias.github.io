@@ -10,7 +10,12 @@
     // Resolve site-root paths from this script's own location, so pages at
     // any depth can share it.
     const ROOT = new URL("../", document.currentScript.src);
-    const BG_SRC = new URL("images/bg.jpg", ROOT).href;
+    // The photo comes in several widths (WebP). We load the smallest one that
+    // stays sharp at the size it's drawn on this screen, so phones fetch
+    // ~90KB instead of the full-size file.
+    const BG_WIDTHS = [1200, 1800, 2400, 2976];
+    const bgUrl = w => new URL(`images/bg/bg-${w}.webp`, ROOT).href;
+    let bgWidth = 0;   // width currently in use; only ever grows
 
     const IMG_W = 2976, IMG_H = 3968;
     const HORIZON = 0.455; // horizon as a fraction of image height
@@ -43,6 +48,16 @@
             el.style.setProperty("--t", y > 0.5 ? `${y}px` : "-999px");
             el.style.setProperty("--b", y > 0.5 ? `${y + h}px` : `${vh + 999}px`);
         });
+
+        // Pick the photo size for this screen (upgrade only, e.g. when a
+        // window is enlarged; never re-download a smaller one).
+        const need = w * Math.min(window.devicePixelRatio || 1, 2);
+        const pick = BG_WIDTHS.find(bw => bw >= need) || BG_WIDTHS[BG_WIDTHS.length - 1];
+        if (pick > bgWidth) {
+            bgWidth = pick;
+            root.setProperty("--bg-url", `url("${bgUrl(pick)}")`);
+            document.dispatchEvent(new Event("bgchange"));
+        }
 
         // The sky ends just above the horizon.
         const horizonY = y + h * HORIZON;
@@ -438,6 +453,11 @@
                 }
             });
             document.body.classList.add("rippling");
+            // Safari-engine browsers (incl. every iOS browser) must not get
+            // per-letter layers; see .layered in sky.css.
+            const ua = navigator.userAgent;
+            const webkitOnly = /AppleWebKit/.test(ua) && !/Chrome\/|Chromium\//.test(ua);
+            if (!webkitOnly) document.body.classList.add("layered");
         }
 
         // Record each letter's resting center, and size/offset the gradient
@@ -496,8 +516,16 @@
         // after the items are repositioned (including on resize).
         window.addEventListener("resize", resize);
 
-        const img = new Image();
-        img.onload = () => {
+        let started = false;
+        function loadPhoto() {
+            const img = new Image();
+            img.onload = () => upload(img);
+            img.src = bgUrl(bgWidth);
+        }
+        // A bigger screen (window enlarged) swaps in a sharper photo.
+        document.addEventListener("bgchange", () => { if (started) loadPhoto(); });
+
+        function upload(img) {
             let source = img;
             // Downscale if the GPU can't hold the full-size photo.
             const max = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -509,6 +537,8 @@
                 source.getContext("2d").drawImage(img, 0, 0, source.width, source.height);
             }
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
+            if (started) return; // a later, sharper photo: texture swap only
+            started = true;
 
             resize();
             canvas.style.display = "block";
@@ -523,7 +553,7 @@
             // Re-measure once the web font has loaded and widths settle.
             if (document.fonts) document.fonts.ready.then(measureText);
             requestAnimationFrame(frame);
-        };
-        img.src = BG_SRC;
+        }
+        loadPhoto();
     })();
 })();

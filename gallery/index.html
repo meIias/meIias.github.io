@@ -182,7 +182,15 @@
         </div>
 
         <script>
-            const src = n => `../images/gallery/${String(n).padStart(2, "0")}.jpg`;
+            // Grid shows small WebP copies (~140KB each); the full-size JPEG
+            // only loads when an image is opened in the lightbox.
+            const src = n => `../images/gallery/grid/${String(n).padStart(2, "0")}.webp`;
+            const full = s => s.replace("/grid/", "/").replace(".webp", ".jpg");
+
+            // Image sizes, known up front so the grid lays out immediately
+            // instead of downloading every image first just to measure it.
+            // Update this if images are added or swapped.
+            const DIMS = {"1": [1400, 1400], "2": [1400, 1308], "3": [1287, 1400], "4": [1329, 1400], "5": [1081, 1400], "6": [1142, 1400], "7": [1400, 1400], "8": [1112, 1400], "9": [1137, 1400], "10": [1046, 1400], "11": [1098, 1400], "12": [1400, 1400], "13": [1050, 1400], "14": [1071, 1400], "15": [1050, 1400], "16": [1065, 1400], "17": [1400, 1387], "18": [1400, 1134], "19": [1120, 1400], "20": [1151, 1400]};
 
             // Hand-authored row breaks, copied exactly from the Cargo site's
             // gallery-justify markup (its justify-row-end="true" markers). This
@@ -205,21 +213,11 @@
             let ready = false;
             let lastWidth = null;
 
-            function preloadDimensions(callback) {
-                let remaining = IMAGES.length;
-                IMAGES.forEach(s => {
-                    const img = new Image();
-                    img.onload = () => {
-                        loaded[s] = { w: img.naturalWidth, h: img.naturalHeight };
-                        if (--remaining === 0) callback();
-                    };
-                    img.onerror = () => {
-                        loaded[s] = { w: 1, h: 1 };
-                        if (--remaining === 0) callback();
-                    };
-                    img.src = s;
-                });
-            }
+            ROWS.flat().forEach(s => {
+                const [w, h] = DIMS[Number(s.match(/(\d+)\.webp$/)[1])];
+                loaded[s] = { w, h };
+            });
+            ready = true;
 
             // Justified-row gallery: each row's images keep their own aspect
             // ratios at a shared row height, stretched to fill the width. On
@@ -271,9 +269,12 @@
                         const imgEl = document.createElement("img");
                         imgEl.src = s;
                         imgEl.alt = "";
+                        // Only fetch images as they approach the screen.
+                        imgEl.loading = "lazy";
+                        imgEl.decoding = "async";
                         imgEl.style.height = rowHeight + "px";
                         imgEl.style.width = (rowHeight * aspectOf(s)) + "px";
-                        imgEl.addEventListener("click", () => openLightbox(s));
+                        imgEl.addEventListener("click", () => openLightbox(full(s)));
                         rowEl.appendChild(imgEl);
                     });
                     fragment.appendChild(rowEl);
@@ -296,11 +297,7 @@
                 resizeTimer = setTimeout(layoutGallery, 150);
             });
 
-            preloadDimensions(() => {
-                ready = true;
-                layoutGallery();
-            });
-            window.addEventListener("load", () => setTimeout(layoutGallery, 50));
+            layoutGallery();
         </script>
     </body>
 </html>
