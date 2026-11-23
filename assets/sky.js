@@ -182,7 +182,7 @@
         const TILE = 160;        // noise tile size in CSS px
         const FRAMES = 6;        // distinct noise tiles to cycle through
         const FPS = 20;          // how often the static jumps
-        const ALPHA = [8, 23];   // per-speck opacity range (0-255): grain strength
+        const ALPHA = [5, 14];   // per-speck opacity range (0-255): grain strength
 
         const layer = document.createElement("div");
         layer.className = "grain";
