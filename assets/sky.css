@@ -1,0 +1,234 @@
+/* Shared styles for the "sky" pages (home, music): the rippling night photo
+   with text scattered across the sky. Paths are relative to this file. */
+
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 500;
+    font-style: normal;
+    src: url("../font/SpaceGrotesk-Medium.woff2") format("woff2");
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Space Grotesk";
+    font-weight: 700;
+    font-style: normal;
+    src: url("../font/SpaceGrotesk-Bold.woff2") format("woff2");
+    font-display: swap;
+}
+
+:root {
+    --mid: rgb(135, 135, 135);
+    --hi: rgb(232, 232, 232);
+    /* 3D extrusion color, and a fixed fallback edge used before the script
+       picks a random depth per item. Stacked 1px shadows, each offset from
+       the last, fill in a solid edge attached to the letters. */
+    --depth: rgb(92, 92, 100);
+    --extrude:
+        drop-shadow(1px 1px 0 var(--depth))
+        drop-shadow(1px 1px 0 var(--depth))
+        drop-shadow(1px 1px 0 var(--depth))
+        drop-shadow(1px 1px 0 var(--depth));
+    --faint: rgba(255, 255, 255, 0.35);
+    --pad: clamp(0.6rem, 1.5vw, 1.1rem);
+    /* Distance from the bottom of the viewport to the horizon in the photo.
+       Updated by sky.js to match exactly. */
+    --horizon-gap: 52vh;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: #12182a;
+}
+
+body {
+    position: fixed;
+    inset: 0;
+    touch-action: none;
+    font-family: "Space Grotesk", Arial, sans-serif;
+}
+
+/* Blurred copy fills any edges the zoomed-out photo leaves bare. */
+.bg-fill,
+.bg {
+    position: absolute;
+    inset: 0;
+    background-image: url("../images/bg.jpg");
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
+
+.bg-fill {
+    background-size: cover;
+    filter: blur(50px) brightness(0.7);
+    transform: scale(1.15);
+}
+
+.bg {
+    /* Real size is set by the script; cover is the no-JS fallback. */
+    background-size: var(--bg-size, cover);
+}
+
+/* WebGL ripple layer: draws the same photo, bent by moving rings. Hidden
+   until it's ready. */
+.ripple {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.photo {
+    /* Feather the photo's edges into the blurred fill. */
+    --l: 0px; --r: 100vw; --t: 0px; --b: 100vh; --f: 140px;
+    -webkit-mask-image:
+        linear-gradient(to right, transparent var(--l), #000 calc(var(--l) + var(--f)), #000 calc(var(--r) - var(--f)), transparent var(--r)),
+        linear-gradient(to bottom, transparent var(--t), #000 calc(var(--t) + var(--f)), #000 calc(var(--b) - var(--f)), transparent var(--b));
+    -webkit-mask-composite: source-in;
+    mask-image:
+        linear-gradient(to right, transparent var(--l), #000 calc(var(--l) + var(--f)), #000 calc(var(--r) - var(--f)), transparent var(--r)),
+        linear-gradient(to bottom, transparent var(--t), #000 calc(var(--t) + var(--f)), #000 calc(var(--b) - var(--f)), transparent var(--b));
+    mask-composite: intersect;
+}
+
+/* The sky: the area from the top margin down to just above the horizon.
+   Without JS its items simply stack in the top-left; sky.js scatters them. */
+.sky {
+    position: absolute;
+    top: calc(var(--pad) + env(safe-area-inset-top));
+    left: calc(var(--pad) + env(safe-area-inset-left));
+    right: calc(var(--pad) + env(safe-area-inset-right));
+    bottom: calc(var(--horizon-gap) + var(--pad));
+    opacity: 0.8;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+
+.float {
+    white-space: nowrap;
+    font-size: clamp(0.95rem, 1.6vw, 1.3rem);
+}
+
+.scattered .float {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Title: "moeee" with "of sf, ca." beside it, scaled together. */
+.brand {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35em;
+}
+
+/* Every piece of sky text: a static gray-to-light gradient with a 3D edge.
+   The edge uses drop-shadow because text-shadow would paint over the
+   clipped gradient. */
+.t {
+    display: inline-block;
+    font-size: 1em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: lowercase;
+    text-decoration: none;
+    color: transparent;
+    background-image: linear-gradient(90deg, var(--mid), var(--hi));
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: var(--extrude);
+}
+
+.brand .t {
+    letter-spacing: 0.08em;
+}
+
+.t.sub {
+    font-size: 0.57em;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    word-spacing: 0.3em;
+}
+
+a.t:hover {
+    opacity: 0.6;
+}
+
+/* Clickable vs not: links are brighter (up to pure white) with a soft halo
+   around them; plain text keeps the standard gray. The color lives in the
+   letters (the per-letter spans inherit these), so it rides the ripple, and
+   it works on touch screens where there's no hover. sky.js adds the halo
+   after each link's random 3D edge; this filter is the no-JS fallback. */
+a.t {
+    --mid: rgb(185, 185, 190);
+    --hi: rgb(255, 255, 255);
+    filter: var(--extrude) drop-shadow(0 0 0.35em rgba(255, 255, 255, 0.3));
+}
+
+/* When the ripple runs, sky.js splits each .t into one span per letter so
+   each letter can ride the same waves as the photo. The gradient moves onto
+   the letters, sized to the whole word (--W) and offset by each letter's
+   position (--ox), so it still reads as one continuous gradient. */
+.rippling .t {
+    background: none;
+}
+
+.ch {
+    display: inline-block;
+    white-space: pre;
+    color: transparent;
+    background-image: linear-gradient(90deg, var(--mid), var(--hi));
+    background-size: var(--W, 100%) 100%;
+    background-position: calc(-1 * var(--ox, 0px)) 0;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    will-change: transform;
+}
+
+.copyright {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pad) + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    color: var(--faint);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+/* Film grain / TV static over everything (photo and text). sky.js fills it
+   with a few pre-drawn noise tiles and flicks between them at random
+   offsets so the static crawls; faint scanlines add to the TV feel. */
+.grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    background-repeat: repeat;
+}
+
+.grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.09) 0px,
+        rgba(0, 0, 0, 0.09) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}

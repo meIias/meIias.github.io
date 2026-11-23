@@ -1,0 +1,306 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="theme-color" content="#12182a">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="manifest" href="https://moeelias.com/static/site.webmanifest">
+        <link rel="mask-icon" href="https://moeelias.com/static/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="apple-touch-icon" sizes="180x180" href="https://moeelias.com/static/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="https://moeelias.com/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="https://moeelias.com/static/favicon-16x16.png">
+
+        <title>gallery · moe of sf, ca.</title>
+
+        <style>
+            @font-face {
+                font-family: "Space Grotesk";
+                font-weight: 500;
+                font-style: normal;
+                src: url("../font/SpaceGrotesk-Medium.woff2") format("woff2");
+                font-display: swap;
+            }
+
+            @font-face {
+                font-family: "Space Grotesk";
+                font-weight: 700;
+                font-style: normal;
+                src: url("../font/SpaceGrotesk-Bold.woff2") format("woff2");
+                font-display: swap;
+            }
+
+            :root {
+                --mid: rgb(135, 135, 135);
+                --hi: rgb(232, 232, 232);
+                /* 3D extrusion: stacked 1px shadows, each offset from the
+                   last, fill in a solid edge so the side looks attached to
+                   the letters. Whole pixels only: browsers round sub-pixel
+                   shadow offsets down to nothing on small text. */
+                --depth: rgb(92, 92, 100);
+                --extrude:
+                    drop-shadow(1px 1px 0 var(--depth))
+                    drop-shadow(1px 1px 0 var(--depth))
+                    drop-shadow(1px 1px 0 var(--depth))
+                    drop-shadow(1px 1px 0 var(--depth));
+                --pad: clamp(0.6rem, 1.5vw, 1.1rem);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                background: #12182a;
+            }
+
+            body {
+                font-family: "Space Grotesk", Arial, sans-serif;
+            }
+
+            .top {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                padding: var(--pad);
+                opacity: 0.8;
+            }
+
+            .brand {
+                display: flex;
+                align-items: baseline;
+                gap: 0.5rem;
+                white-space: nowrap;
+            }
+
+            .brand a {
+                font-weight: 700;
+                font-size: clamp(0.95rem, 1.75vw, 1.4rem);
+                text-decoration: none;
+                letter-spacing: 0.08em;
+            }
+
+            .brand span {
+                font-weight: 500;
+                font-size: clamp(0.62rem, 1vw, 0.8rem);
+                letter-spacing: 0.12em;
+                word-spacing: 0.3em;
+            }
+
+            .back {
+                font-weight: 700;
+                font-size: clamp(0.72rem, 1.1vw, 0.88rem);
+                letter-spacing: 0.14em;
+                text-decoration: none;
+            }
+
+            /* Static gray-to-light gradient, same as the home page. */
+            .brand a,
+            .brand span,
+            .back {
+                display: inline-block;
+                color: transparent;
+                background-image: linear-gradient(90deg, var(--mid), var(--hi));
+                -webkit-background-clip: text;
+                background-clip: text;
+                filter: var(--extrude);
+            }
+
+
+
+
+            .brand a:hover,
+            .back:hover {
+                opacity: 0.6;
+            }
+
+            .gallery {
+                width: 100%;
+            }
+
+            .gallery-row {
+                display: flex;
+                margin-bottom: 2px;
+            }
+
+            .gallery-row img {
+                display: block;
+                object-fit: cover;
+                margin-right: 2px;
+                cursor: zoom-in;
+            }
+
+            .gallery-row img:last-child {
+                margin-right: 0;
+            }
+
+            .lightbox {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.9);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 20;
+                cursor: zoom-out;
+                padding: 3rem;
+            }
+
+            .lightbox.open {
+                display: flex;
+            }
+
+            .lightbox img {
+                max-width: 100%;
+                max-height: 100%;
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            }
+
+            @media (max-width: 768px) {
+                .lightbox {
+                    padding: 1rem;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <header class="top">
+            <div class="brand">
+                <a href="../">moeee</a>
+                <span>of sf, ca.</span>
+            </div>
+            <a class="back" href="../">&larr; back</a>
+        </header>
+
+        <main class="gallery" id="gallery"></main>
+
+        <div class="lightbox" id="lightbox">
+            <img id="lightbox-img" src="" alt="">
+        </div>
+
+        <script>
+            const src = n => `../images/gallery/${String(n).padStart(2, "0")}.jpg`;
+
+            // Hand-authored row breaks, copied exactly from the Cargo site's
+            // gallery-justify markup (its justify-row-end="true" markers). This
+            // is the intentional layout -- not something to re-derive -- so we
+            // honor it one-to-one and just justify each row to the width.
+            const ROWS = [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+                [10, 11, 12],
+                [13, 14, 15, 16],
+                [17, 18],
+                [19, 20],
+            ].map(row => row.map(src));
+
+            const IMAGES = ROWS.flat();
+
+            const gallery = document.getElementById("gallery");
+            const loaded = {};
+            let ready = false;
+            let lastWidth = null;
+
+            function preloadDimensions(callback) {
+                let remaining = IMAGES.length;
+                IMAGES.forEach(s => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loaded[s] = { w: img.naturalWidth, h: img.naturalHeight };
+                        if (--remaining === 0) callback();
+                    };
+                    img.onerror = () => {
+                        loaded[s] = { w: 1, h: 1 };
+                        if (--remaining === 0) callback();
+                    };
+                    img.src = s;
+                });
+            }
+
+            // Justified-row gallery: each row's images keep their own aspect
+            // ratios at a shared row height, stretched to fill the width. On
+            // mobile the wider authored rows are re-chunked into pairs so
+            // images stay big.
+            function layoutGallery() {
+                if (!ready) return;
+
+                // Mobile browsers fire "resize" whenever the address bar shows
+                // or hides, which only changes the height. Row sizes depend
+                // only on width, so skip those to leave scrolling undisturbed.
+                const containerWidth = gallery.clientWidth;
+                if (containerWidth === lastWidth) return;
+                lastWidth = containerWidth;
+
+                const isMobile = window.innerWidth <= 768;
+                const gutter = 2;
+
+                const aspectOf = s => loaded[s].w / loaded[s].h;
+
+                let rows = ROWS;
+                if (isMobile) {
+                    // Mobile: two-per-row, except the first image and the
+                    // third-to-last each get their own full-width row.
+                    const solo = new Set([0, IMAGES.length - 3]);
+                    rows = [];
+                    let i = 0;
+                    while (i < IMAGES.length) {
+                        if (solo.has(i)) {
+                            rows.push([IMAGES[i]]);
+                            i += 1;
+                        } else {
+                            rows.push(IMAGES.slice(i, i + 2));
+                            i += 2;
+                        }
+                    }
+                }
+
+                // Build off-DOM and swap in one step: emptying the gallery first
+                // would collapse the page and reset the scroll position to the top.
+                const fragment = document.createDocumentFragment();
+                rows.forEach(group => {
+                    const sum = group.reduce((s, img) => s + aspectOf(img), 0);
+                    const rowHeight = (containerWidth - gutter * (group.length - 1)) / sum;
+
+                    const rowEl = document.createElement("div");
+                    rowEl.className = "gallery-row";
+                    group.forEach(s => {
+                        const imgEl = document.createElement("img");
+                        imgEl.src = s;
+                        imgEl.alt = "";
+                        imgEl.style.height = rowHeight + "px";
+                        imgEl.style.width = (rowHeight * aspectOf(s)) + "px";
+                        imgEl.addEventListener("click", () => openLightbox(s));
+                        rowEl.appendChild(imgEl);
+                    });
+                    fragment.appendChild(rowEl);
+                });
+                gallery.replaceChildren(fragment);
+            }
+
+            function openLightbox(imgSrc) {
+                document.getElementById("lightbox-img").src = imgSrc;
+                document.getElementById("lightbox").classList.add("open");
+            }
+
+            document.getElementById("lightbox").addEventListener("click", () => {
+                document.getElementById("lightbox").classList.remove("open");
+            });
+
+            let resizeTimer;
+            window.addEventListener("resize", () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(layoutGallery, 150);
+            });
+
+            preloadDimensions(() => {
+                ready = true;
+                layoutGallery();
+            });
+            window.addEventListener("load", () => setTimeout(layoutGallery, 50));
+        </script>
+    </body>
+</html>
