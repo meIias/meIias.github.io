@@ -116,6 +116,14 @@ body {
     gap: 0.6rem;
 }
 
+.group {
+    display: contents;
+}
+
+.group[hidden] {
+    display: none;
+}
+
 .float {
     white-space: nowrap;
     font-size: clamp(0.95rem, 1.6vw, 1.3rem);
@@ -195,7 +203,8 @@ a.t {
     background-repeat: no-repeat;
     -webkit-background-clip: text;
     background-clip: text;
-    will-change: transform;
+    /* No will-change here: on iOS Safari, giving each letter its own
+       compositing layer drops the parent's drop-shadow (the 3D edge). */
 }
 
 .copyright {
